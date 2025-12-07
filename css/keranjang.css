@@ -1,0 +1,128 @@
+.whatsapp-float {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  bottom: 40px;
+  right: 20px;
+  background-color: #25d366;
+  color: #fff;
+  border-radius: 50px;
+  text-align: center;
+  font-size: 24px;
+  box-shadow: 2px 2px 3px #999;
+  z-index: 1000; /* Pastikan ikon muncul di atas konten lain */
+}
+
+.whatsapp-icon {
+  width: 60px;
+  height: 60px;
+  margin-top: 0px;
+} 
+
+.container {
+  max-width: 1200px; /* Lebih lebar */
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.product-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  padding: 20px; /* Lebih besar */
+  margin-bottom: 20px; /* Lebih besar */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+  width: 65%; /* Lebih lebar */
+}
+
+.product-info img {
+  width: 100px; /* Lebih besar */
+  height: 100px; /* Lebih besar */
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 20px; /* Lebih besar */
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Lebih besar */
+}
+
+.quantity {
+  width: 90px; /* Lebih besar */
+}
+
+#total-harga, #total-produk {
+  font-weight: bold;
+  font-size: 1.2rem; /* Lebih besar */
+}
+
+.checkout-section {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #e3f2fd; /* Light blue background */
+  padding: 30px; /* Lebih besar */
+  padding-left: 60px; /* Lebih besar */
+  padding-right: 60px; /* Lebih besar */
+  border-top: 1px solid #dee2e6;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ensure it stays above other content */
+}
+
+.checkout-section h3 {
+  margin: 0;
+}
+
+.btn-checkout {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 15px 30px; /* Lebih besar */
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.btn-checkout:hover {
+  background-color: #0056b3;
+}
+
+.out-of-stock {
+  position: relative;
+  background-color: #f8f9fa; /* Light grey background */
+  color: rgba(0, 0, 0, 0.1); /* Grey text */
+}
+
+.out-of-stock .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2); /* Semi-transparent overlay */
+  color: red;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  backdrop-filter: blur(100px); /* Add blur effect */
+}
+
+.out-of-stock span {
+  position: relative;
+  z-index: 2; /* Place text above overlay */
+}

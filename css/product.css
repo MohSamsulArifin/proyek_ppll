@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+    background-color: #eaeaea;
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    color: #2d2d2d;
+}
+
+.card {
+    margin: 10px;
+}
+
+.card-img-top-center {
+    width: 100%;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: sans-serif;
+}
+
+.content {
+    max-width: 1200px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Mengubah menjadi 6 kolom */
+    padding: 2rem;
+    box-sizing: border-box;
+    column-gap: 20px;
+    row-gap: 40px;
+}
+
+.content .item {
+    border: 1px solid #0000001a;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 5px;
+    background-color: rgba(50, 91, 255, 0.056);
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Menambahkan transition */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Menambahkan shadow saat hover */
+}
+
+.content .item:hover {
+    transform: translateY(-10px); /* Efek hover untuk mengangkat elemen */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Menambahkan shadow saat hover */
+    background-color: rgba(50, 142, 255, 0.084);
+}
+
+.content .item img {
+    width: 100%;
+    border-radius: 5px;
+}
+
+.content p {
+    font-size: 15px;
+    padding: 0.5rem 0;
+}
+
+.content h2 {
+    font-size: 18px;
+    color: rgb(43, 170, 255)
+}
+
+@media (max-width: 1200px) {
+    .content {
+        grid-template-columns: repeat(4, 1fr); /* 4 kolom untuk layar lebih kecil */
+    }
+}
+
+@media (max-width: 800px) {
+    .content {
+        grid-template-columns: repeat(3, 1fr); /* 3 kolom untuk layar tablet */
+    }
+}
+
+@media (max-width: 600px) {
+    .content {
+        grid-template-columns: repeat(2, 1fr); /* 2 kolom untuk layar ponsel */
+    }
+}
+
+
+.whatsapp-float {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  bottom: 40px;
+  right: 20px;
+  background-color: #25d366;
+  color: #fff;
+  border-radius: 50px;
+  text-align: center;
+  font-size: 24px;
+  box-shadow: 2px 2px 3px #999;
+  z-index: 1000; /* Pastikan ikon muncul di atas konten lain */
+}
+
+.whatsapp-icon {
+  width: 60px;
+  height: 60px;
+  margin-top: 0px;
+} 

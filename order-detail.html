@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Detail Pesanan - Beauty Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    font-family: 'Times New Roman', serif;
+    margin: 0;
+    background: #ffffff;
+    color: #333;
+}
+
+.top-bar {
+    background: #ffebf2;
+    color: #e91e63;
+    text-align: center;
+    padding: 8px 0;
+    font-weight: bold;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e91e63;
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: #333;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 30px 15px;
+}
+
+.order-box {
+    background: #fff6f9;
+    border: 1px solid #ffd6e7;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.order-box img {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    border: 1px solid #ffe5ef;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+h2 {
+    color: #e91e63;
+}
+
+.status {
+    display: inline-block;
+    background: #ffe0ec;
+    padding: 6px 14px;
+    border-radius: 15px;
+    margin: 10px 0;
+}
+</style>
+
+</head>
+<body>
+
+<div class="top-bar">🌸 Beauty Store 🌸</div>
+
+<div class="navbar">
+    <div class="logo">Beauty Store</div>
+    <ul>
+        <li><a href="order.html">Pesanan</a></li>
+    </ul>
+</div>
+
+<div class="container">
+    <h2>Detail Pesanan</h2>
+    <div id="detailBox"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+const order = orders.find(o => o.id == id);
+
+document.getElementById("detailBox").innerHTML = `
+    <div class="order-box">
+        <img src="${order.image}">
+        <h3>${order.name}</h3>
+        <span class="status">${order.status}</span>
+
+        <p><strong>Harga:</strong> Rp ${order.price.toLocaleString("id-ID")}</p>
+        <p><strong>Tanggal Pesan:</strong> ${order.date}</p>
+        <p><strong>Alamat:</strong> ${order.address || "-"}</p>
+        <p><strong>Catatan:</strong> ${order.note || "-"}</p>
+    </div>
+`;
+</script>
+
+</body>
+</html>

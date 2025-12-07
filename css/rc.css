@@ -1,0 +1,19 @@
+
+.custom-select-width {
+  width: 150px; /* Adjust the width as needed */
+  appearance: none; /* Remove default arrow in some browsers */
+  padding-right: 30px; /* Make space for the icon */
+}
+
+.position-relative {
+  position: relative;
+}
+
+.dropdown-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Make sure the icon doesn't block select functionality */
+  color: #555;
+}

@@ -1,0 +1,255 @@
+.text {
+    font-size: 24px;
+}
+
+.harga {
+    padding-top: 10px ;
+    font-size: 26px;
+}
+
+.qty {
+    padding-top: 100px;
+}
+
+.keranjang {
+    padding: 12px 20px; 
+    border-color: rgb(0, 123, 255);
+    border-width: 0.5px;
+    border-radius: 5px;
+    color: rgb(0, 0, 0);
+    background-color: rgb(122, 195, 255);
+}
+
+.keranjang:hover {
+    background-color: rgb(106, 188, 255);
+
+}
+
+.now {
+    padding: 12px 20px; 
+    border:0px;
+    border-radius: 5px;
+    color: white;
+    background-color: rgb(30, 139, 255);
+}
+
+.now:hover {
+    background-color: rgb(70, 159, 255);
+    
+}
+
+
+/* styles.css */
+/* styles.css */
+.container-custom {
+    border: 1px solid rgba(115, 115, 115, 0.137);
+    padding-top: 1rem; /* Mengganti pt-3 dari Bootstrap */
+    text-align: center; /* Memastikan teks berada di tengah */
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.36);
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Menambahkan transisi yang halus */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+}
+
+.container-custom:hover {
+    transform: scale(1.05); /* Efek zoom saat hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.container-custom img {
+    width: 180px;
+    height: auto;
+    display: block;
+    margin: auto;
+    border-radius: 8px;
+    transition: transform 0.3s ease; /* Menambahkan transisi yang halus pada gambar */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+
+}
+
+.container-custom img:hover {
+    transform: scale(1.02); /* Efek zoom pada gambar saat hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.container-custom p {
+    font-size: 16px;
+}
+
+.container-custom .pt-3 {
+    padding-top: 1rem; /* Menyesuaikan pt-3 */
+}
+
+/* styles.css */
+/* styles.css */
+.zoom-img {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.zoom-img:hover {
+    transform: scale(1.05);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    border-radius: 8px;
+}
+
+.modal-content, .close {
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@keyframes zoom {
+    from {transform: scale(0)}
+    to {transform: scale(1)}
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.image-overlay {
+    position: relative;
+    display: inline-block;
+  }
+
+  .image-overlay img {
+    display: block;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius : 8px;
+  }
+
+  .image-overlay.out-of-stock .overlay {
+    opacity: 1;
+  }
+
+  .btn-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+
+  .square-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover; /* Ensure the image covers the container without distortion */
+    border-radius: 8px;
+    cursor: pointer; /* Indicate the image is clickable */
+}
+
+/* Style for the popup overlay */
+/* Style for the popup overlay */
+.popup-overlay {
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure the overlay is above other content */
+    opacity: 0; /* Start with an invisible state */
+    transition: opacity 0.3s ease; /* Smooth transition for opacity */
+}
+
+/* Show overlay with smooth transition */
+.popup-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+/* Style for the popup image */
+.popup-image {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transform: scale(1); /* Start with a normal scale */
+}
+
+/* Add this for a smooth pop-in effect */
+.popup-image.show {
+    animation: pop-in 0.3s ease; /* Smooth pop-in animation */
+}
+
+/* Keyframes for pop-in animation */
+@keyframes pop-in {
+    0% {
+        transform: scale(0.7);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+.whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 20px;
+    background-color: #25d366;
+    color: #fff;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 24px;
+    box-shadow: 2px 2px 3px #999;
+    z-index: 1000; /* Pastikan ikon muncul di atas konten lain */
+  }
+  
+  .whatsapp-icon {
+    width: 60px;
+    height: 60px;
+    margin-top: 0px;
+  } 

@@ -1,0 +1,107 @@
+<?php
+include __DIR__ . '/db/koneksi.php';
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produk - Beauty Store</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body { font-family: 'Times New Roman'; margin:0; background:#fff; }
+        .top-bar{background:#ffebf2;color:#e91e63;padding:8px;text-align:center;}
+        .navbar{display:flex;justify-content:space-between;padding:15px 30px;box-shadow:0 2px 5px rgba(0,0,0,0.1);background:#fff;}
+        .navbar .logo{color:#e91e63;font-weight:bold;font-size:24px;}
+        .navbar ul{list-style:none;display:flex;gap:20px;}
+        .navbar ul li a{text-decoration:none;color:#333;}
+        .shop-btn{background:#e91e63;color:#fff;padding:8px 18px;border-radius:20px;text-decoration:none;}
+        .hero{padding:60px 20px;text-align:center;background:linear-gradient(to right, #ffd1e8, #fff);}
+        .products{padding:40px;}
+        .product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;}
+        .product{background:#fff6f9;padding:15px;border-radius:15px;text-align:center;cursor:pointer;}
+        .product img{width:100%;height:220px;object-fit:cover;border-radius:10px;}
+        .product h3{margin:8px 0;font-size:16px;color:#333;}
+        .product p{color:#e91e63;font-weight:bold;}
+    </style>
+
+    <?php
+    // ambil produk dari database (tampilkan terbaru dulu)
+    $products = query("SELECT id_barang, nama_barang, harga, kategori, img, keterangan, stok FROM tb_barang ORDER BY id_barang DESC");
+    ?>
+</head>
+<body>
+
+    <div class="top-bar">🌸 Beauty Store 🌸</div>
+
+    <div class="navbar">
+        <div class="logo">Beauty Store</div>
+
+        <ul>
+            <li><a href="index.php">Beranda</a></li>
+            <li><a href="products.php" style="color:#e91e63;">Produk</a></li>
+            <li><a href="about.php">Tentang</a></li>
+            <li><a href="contact.php">Kontak</a></li>
+        </ul>
+
+        <a class="shop-btn" href="cart.php">Keranjang 🛒</a>
+    </div>
+
+    <div class="hero">
+        <h1>Daftar Produk Kami</h1>
+        <p>Pilih produk favorit kamu</p>
+    </div>
+
+    <div class="products">
+        <h2>Koleksi Terbaru</h2>
+
+        <div class="product-grid" id="productList">
+            <?php foreach($products as $p):
+                // resolve image path: prefer assets/img/ stored uploads, fall back to image/ folder
+                $img = $p['img'] ?? '';
+                if (empty($img)) {
+                    $imgPath = 'image/placeholder.png';
+                } else if (strpos($img, 'assets/') === 0 || strpos($img, 'image/') === 0) {
+                    $imgPath = $img;
+                } else if (file_exists(__DIR__ . '/assets/img/' . $img)) {
+                    $imgPath = 'assets/img/' . $img;
+                } else if (file_exists(__DIR__ . '/image/' . $img)) {
+                    $imgPath = 'image/' . $img;
+                } else {
+                    // last resort: use the value as-is
+                    $imgPath = $img;
+                }
+            ?>
+            <div class="product" onclick="location.href='productdetail.php?id=<?= $p['id_barang'] ?>'">
+                <img src="<?= $imgPath ?>" alt="<?= htmlspecialchars($p['nama_barang']) ?>">
+                <h3><?= htmlspecialchars($p['nama_barang']) ?></h3>
+                <p><?= rupiah($p['harga']) ?></p>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+<script>
+    // Render otomatis dari products-data.js
+    const list = document.getElementById("productList");
+
+    products.forEach(p => {
+        const item = document.createElement("div");
+        item.className = "product";
+        item.onclick = () => window.location.href = `productdetail.php?id=${p.id}`;
+
+        item.innerHTML = `
+            <img src="${p.image}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <p>Rp ${p.price.toLocaleString("id-ID")}</p>
+        `;
+
+        list.appendChild(item);
+    });
+</script>
+
+<!-- no client-side static data; product grid rendered server-side -->

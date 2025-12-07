@@ -1,0 +1,61 @@
+.status-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.status-item {
+  text-align: center;
+  transition: transform 0.3s;
+}
+.status-item:hover {
+  transform: translateY(-10px);
+}
+.status-item a {
+  text-decoration: none; /* Remove underline from links */
+  color: inherit; /* Inherit text color */
+}
+.status-icon {
+  height: 50px;
+  width: 50px;
+  transition: all 0.3s;
+}
+.status-icon:hover {
+  transform: scale(1.1);
+}
+.status-text {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+  transition: color 0.3s;
+}
+.status-text:hover {
+  color: #007bff;
+}
+.order-container {
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.order-icon {
+  height: 20px;
+  width: 20px;
+  margin-right: 5px;
+}
+.order-status {
+  font-size: 15px;
+  font-weight: bold;
+}
+.order-status-refund {
+  color: green;
+}
+.order-status-red {
+  color: red;
+}
+.order-status-green {
+  color: green;
+}
+.order-date {
+  font-size: 14px;
+  color: #555;
+}
