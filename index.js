@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 
 // PENTING: pakai port dari Railway
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.get('/', (req, res) => {
   res.send('<h1>WEB SUDAH JALAN ✅</h1>');
