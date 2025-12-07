@@ -1,20 +1,15 @@
 <?php 
-<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// KONEKSI DATABASE DENGAN ERROR HANDLING
+$host = "localhost";
+$user = "root";
+$password = "";
+$dbname = "beauty";
 
-$host = $_ENV['DB_HOST'] ?? getenv("DB_HOST");
-$user = $_ENV['DB_USER'] ?? getenv("DB_USER");
-$password = $_ENV['DB_PASS'] ?? getenv("DB_PASS");
-$dbname = $_ENV['DB_NAME'] ?? getenv("DB_NAME");
-$port = $_ENV['DB_PORT'] ?? getenv("DB_PORT") ?: 3306;
-
-$conn = mysqli_connect($host, $user, $password, $dbname, $port);
+$conn = mysqli_connect($host, $user, $password, $dbname);
 
 if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
-
 
 // FUNCTION UTAMA DENGAN ERROR HANDLING
 function query($query) {
