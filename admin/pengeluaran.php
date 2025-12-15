@@ -5,6 +5,12 @@ include '../db/koneksi.php';
 $tanggal_awal = $_GET['tanggal_awal'] ?? '';
 $tanggal_akhir = $_GET['tanggal_akhir'] ?? '';
 
+// Set default dates if empty (last 30 days)
+if (empty($tanggal_awal) || empty($tanggal_akhir)) {
+    $tanggal_akhir = date('Y-m-d');
+    $tanggal_awal = date('Y-m-d', strtotime('-30 days'));
+}
+
 // Query data pengeluaran sesuai tanggal
 $data = query("SELECT tanggal, SUM(harga * qty) AS pengeluaran 
         FROM tb_pengeluaran 

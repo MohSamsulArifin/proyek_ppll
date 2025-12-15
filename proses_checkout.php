@@ -2,6 +2,69 @@
 session_start();
 include __DIR__ . '/db/koneksi.php';
 
+// FUNCTION TAMBAH ORDER DENGAN VALIDASI
+function add_orders($data) {
+    global $conn;
+
+    $id_user = intval($data["id_user"]);
+    $id_jasa = intval($data["jasa_kirim"]);
+    $id_metode = intval($data["metode"]);
+    $pesan = mysqli_real_escape_string($conn, $data["pesan"]);
+    $konfirmasi = "Belum Terkonfirmasi";
+    $status = "Belum Bayar";
+    $tanggal_sekarang = date("Y-m-d H:i:s");
+    
+    $stmt = $conn->prepare("INSERT INTO orders (id_user, id_jasa, id_metode, tanggal, pesan, konfirmasi, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iiissss", $id_user, $id_jasa, $id_metode, $tanggal_sekarang, $pesan, $konfirmasi, $status);
+    
+    if ($stmt->execute()) {
+        return $stmt->insert_id;
+    } else {
+        error_log("Error add_orders: " . $stmt->error);
+        return false;
+    }
+}
+
+// FUNCTION TAMBAH DETAIL ORDER SINGLE
+function add_details_now($data, $id_order) {
+    global $conn;
+    
+    $id_barang = intval($data["id_barang"]);
+    $qty = intval($data["qty"]);
+    $harga_satuan = floatval($data["harga_satuan"]);
+    
+    $stmt = $conn->prepare("INSERT INTO details (id_orders, id_barang, harga_satuan, qty) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("iidi", $id_order, $id_barang, $harga_satuan, $qty);
+    
+    return $stmt->execute();
+}
+
+// FUNCTION TAMBAH DETAIL ORDER MULTIPLE
+function add_details($data, $id_order) {
+    global $conn;
+    
+    $id_barang = isset($data["id_barang"]) ? $data["id_barang"] : array();
+    $qty = isset($data["qty"]) ? $data["qty"] : array();
+    $harga_satuan = isset($data["harga_satuan"]) ? $data["harga_satuan"] : array();
+    
+    $success_count = 0;
+    
+    foreach ($id_barang as $index => $barang_id) {
+        $barang_id = intval($barang_id);
+        $qty_barang = intval($qty[$barang_id]);
+        $harga_satuan_barang = floatval($harga_satuan[$barang_id]);
+        
+        $stmt = $conn->prepare("INSERT INTO details (id_orders, id_barang, harga_satuan, qty) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iidi", $id_order, $barang_id, $harga_satuan_barang, $qty_barang);
+        
+        if ($stmt->execute()) {
+            $success_count++;
+        }
+    }
+    
+    return $success_count;
+}
+
 // Pastikan user login
 if (!isset($_SESSION['id_user'])) {
     header('Location: login.php');

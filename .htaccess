@@ -1,0 +1,34 @@
+# Set default charset
+AddDefaultCharset UTF-8
+
+# Disable directory listing
+Options -Indexes
+
+# Default file
+DirectoryIndex index.php index.html
+
+# Protect sensitive files
+<FilesMatch "^(koneksi|config|\.env|\.htaccess)$">
+    Require all denied
+</FilesMatch>
+
+# Rewrite rules
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Protect against SQL injection
+    RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+    RewriteRule ^(.*)$ index.php [F,L]
+</IfModule>
+
+# Enable compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript
+</IfModule>
+
+# Block access to backup files
+<FilesMatch "\.(bak|backup|old|sql|gz|tar)$">
+    Require all denied
+</FilesMatch>

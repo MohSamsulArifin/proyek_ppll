@@ -2,6 +2,50 @@
 session_start();
 include __DIR__ . '/db/koneksi.php';
 
+// FUNCTION TAMBAH USER DENGAN PREPARED STATEMENT
+function add_user($data) {
+    global $conn;
+    
+    $stmt = $conn->prepare("INSERT INTO tb_user (username, nama, alamat, email, password) VALUES (?, ?, ?, ?, ?)");
+    
+    $username = mysqli_real_escape_string($conn, $data["username"]);
+    $nama = mysqli_real_escape_string($conn, $data["nama"]);
+    $alamat = mysqli_real_escape_string($conn, $data["alamat"]);
+    $email = mysqli_real_escape_string($conn, $data["email"]);
+    $password_hash = password_hash($data['password'], PASSWORD_DEFAULT);
+    
+    $stmt->bind_param("sssss", $username, $nama, $alamat, $email, $password_hash);
+    
+    if ($stmt->execute()) {
+        return $stmt->insert_id;
+    } else {
+        error_log("Error add_user: " . $stmt->error);
+        return false;
+    }
+}
+
+// FUNCTION UPDATE DATA PENERIMA
+function penerima($data, $id_user){
+    global $conn;
+    
+    $nama = mysqli_real_escape_string($conn, $data["nama"]);
+    $telp = mysqli_real_escape_string($conn, $data["telp"]);
+    $alamat = mysqli_real_escape_string($conn, $data["alamat"]);
+
+    $stmt = $conn->prepare("UPDATE tb_user SET nama = ?, telp = ?, alamat = ? WHERE id_user = ?");
+    $stmt->bind_param("sssi", $nama, $telp, $alamat, $id_user);
+    
+    return $stmt->execute();
+}
+
+// FUNCTION UNTUK VALIDASI INPUT
+function validate_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 $errors = [];
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'products.php';
 

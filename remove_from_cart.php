@@ -2,6 +2,15 @@
 session_start();
 include __DIR__ . '/db/koneksi.php';
 
+// FUNCTION HAPUS BARANG DARI KERANJANG
+function hapusBarang($id_user, $id_barang) {
+    global $conn;
+    
+    $stmt = $conn->prepare("DELETE FROM keranjang WHERE id_user = ? AND id_barang = ?");
+    $stmt->bind_param("ii", $id_user, $id_barang);
+    return $stmt->execute();
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: cart.php');
     exit;

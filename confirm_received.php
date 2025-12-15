@@ -2,6 +2,31 @@
 session_start();
 include __DIR__ . '/db/koneksi.php';
 
+// FUNCTION SELESAI ORDER
+function selesai($id_orders) {
+    global $conn;
+    
+    $status = "Selesai";
+    $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id_orders = ?");
+    $stmt->bind_param("si", $status, $id_orders);
+    
+    return $stmt->execute();
+}
+
+// FUNCTION TAMBAH RATING
+function add_rating($id_orders, $id_barang, $rating, $ulasan, $foto = '') {
+    global $conn;
+    
+    $rating = intval($rating);
+    $ulasan = mysqli_real_escape_string($conn, $ulasan);
+    $foto = mysqli_real_escape_string($conn, $foto);
+    
+    $stmt = $conn->prepare("UPDATE details SET rating = ?, ulasan = ?, foto = ? WHERE id_orders = ? AND id_barang = ?");
+    $stmt->bind_param("issii", $rating, $ulasan, $foto, $id_orders, $id_barang);
+    
+    return $stmt->execute();
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: order.php');
     exit;

@@ -1,5 +1,107 @@
 <?php 
     include "../db/koneksi.php";
+    
+    // FUNCTION AJUKAN RETUR
+    function add_retur($data, $file) {
+        global $conn;
+        
+        $id_orders = intval($data["id_orders"]);
+        $tgl = date("Y-m-d H:i:s");
+        $alasan = mysqli_real_escape_string($conn, $data["alasan"]);
+        $status = "Menunggu";
+
+        // Handle file upload
+        $nama_file_database = '';
+        if (isset($file["bukti"]) && $file["bukti"]["error"] === UPLOAD_ERR_OK) {
+            $nama_file = uniqid() . '_' . basename($file["bukti"]["name"]);
+            $tujuan = __DIR__ . '/../upload/' . $nama_file;
+            
+            if (!is_dir(dirname($tujuan))) {
+                mkdir(dirname($tujuan), 0777, true);
+            }
+            
+            if (move_uploaded_file($file["bukti"]["tmp_name"], $tujuan)) {
+                $nama_file_database = 'upload/' . $nama_file;
+            }
+        }
+
+        $stmt = $conn->prepare("INSERT INTO tb_refund (id_orders, tanggal, alasan, bukti, status_refund) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("issss", $id_orders, $tgl, $alasan, $nama_file_database, $status);
+        
+        return $stmt->execute();
+    }
+    
+    // FUNCTION UPDATE STATUS RETUR
+    function retur($id_orders) {
+        global $conn;
+        
+        $status = "Diajukan Retur";
+        $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id_orders = ?");
+        $stmt->bind_param("si", $status, $id_orders);
+        
+        return $stmt->execute();
+    }
+    
+    // FUNCTION KONFIRMASI RETUR
+    function confirm_retur($id_orders) {
+        global $conn;
+        
+        $status = "Retur";
+        $status_refund = "Diterima";
+
+        $conn->begin_transaction();
+        
+        try {
+            // Update orders
+            $stmt1 = $conn->prepare("UPDATE orders SET status = ? WHERE id_orders = ?");
+            $stmt1->bind_param("si", $status, $id_orders);
+            $stmt1->execute();
+            
+            // Update refund
+            $stmt2 = $conn->prepare("UPDATE tb_refund SET status_refund = ? WHERE id_orders = ?");
+            $stmt2->bind_param("si", $status_refund, $id_orders);
+            $stmt2->execute();
+            
+            $conn->commit();
+            return true;
+            
+        } catch (Exception $e) {
+            $conn->rollback();
+            error_log("Error confirm_retur: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // FUNCTION TOLAK RETUR
+    function tolak_retur($id_orders) {
+        global $conn;
+        
+        $status = "Retur Ditolak";
+        $status_refund = "Ditolak";
+
+        $conn->begin_transaction();
+        
+        try {
+            // Update orders
+            $stmt1 = $conn->prepare("UPDATE orders SET status = ? WHERE id_orders = ?");
+            $stmt1->bind_param("si", $status, $id_orders);
+            $stmt1->execute();
+            
+            // Update refund
+            $stmt2 = $conn->prepare("UPDATE tb_refund SET status_refund = ? WHERE id_orders = ?");
+            $stmt2->bind_param("si", $status_refund, $id_orders);
+            $stmt2->execute();
+            
+            $conn->commit();
+            return true;
+            
+        } catch (Exception $e) {
+            $conn->rollback();
+            error_log("Error tolak_retur: " . $e->getMessage());
+            return false;
+        }
+    }
+    
     $orders = query("SELECT *, tb_refund.tanggal as tgl_refund, tb_refund.alasan FROM orders 
                 inner join jasa_kirim using(id_jasa) 
                 inner join metode using(id_metode)

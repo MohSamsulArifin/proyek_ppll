@@ -1,5 +1,227 @@
 <?php 
     include "../db/koneksi.php";
+    
+    // FUNCTION PERHITUNGAN HARGA JUAL
+    function calculate_selling_price($harga_beli) {
+        $harga_beli = floatval($harga_beli);
+        
+        if ($harga_beli <= 1000000) {
+            $margin = 0.3; // 30%
+        } elseif ($harga_beli <= 5000000) {
+            $margin = 0.2; // 20%
+        } elseif ($harga_beli <= 15000000) {
+            $margin = 0.1; // 10%
+        } elseif ($harga_beli <= 25000000) {
+            $margin = 0.08; // 8%
+        } else {
+            $margin = 0.05; // 5%
+        }
+        
+        return $harga_beli * (1 + $margin);
+    }
+    
+    // helper: process uploaded image (validate + resize) and store under assets/img/
+    function process_uploaded_image($file, $maxDim = 1200) {
+        if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return false;
+
+        $tmp = $file['tmp_name'];
+        $info = @getimagesize($tmp);
+        if (!$info) return false;
+
+        $mime = $info['mime'];
+        $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
+        if (!in_array($mime, $allowed)) return false;
+
+        $ext = '';
+        switch ($mime) {
+            case 'image/jpeg': $ext = '.jpg'; break;
+            case 'image/png': $ext = '.png'; break;
+            case 'image/gif': $ext = '.gif'; break;
+            case 'image/webp': $ext = '.webp'; break;
+            case 'image/avif': $ext = '.avif'; break;
+            default: $ext = '.jpg';
+        }
+
+        $name = uniqid() . $ext;
+        $dest = __DIR__ . '/../assets/img/' . $name;
+        if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0777, true);
+
+        // if AVIF, or GD isn't available to process images, just move the uploaded file (best-effort)
+        if ($mime === 'image/avif' || !function_exists('imagecreatefromstring')) {
+            // If GD is not available we cannot resize/convert safely — fallback to move_uploaded_file
+            // preserve extension from original filename if possible
+            $origExt = pathinfo($file['name'], PATHINFO_EXTENSION);
+            if ($origExt) {
+                $dest = __DIR__ . '/../assets/img/' . uniqid() . '.' . strtolower($origExt);
+                if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0777, true);
+                if (move_uploaded_file($tmp, $dest)) return 'assets/img/' . basename($dest);
+            }
+            // fallback to original plan
+            if (move_uploaded_file($tmp, $dest)) return 'assets/img/' . $name;
+            return false;
+        }
+
+        // try to create image resource and resize if needed
+        $data = file_get_contents($tmp);
+        if ($data === false) return false;
+
+        $src = @imagecreatefromstring($data);
+        if (!$src) {
+            // fallback to simple move (as a last resort)
+            if (move_uploaded_file($tmp, $dest)) return 'assets/img/' . $name;
+            return false;
+        }
+
+        $width = imagesx($src);
+        $height = imagesy($src);
+        $scale = min(1, $maxDim / max($width, $height));
+        $newW = (int) round($width * $scale);
+        $newH = (int) round($height * $scale);
+
+        if ($scale < 1) {
+            $dst = imagecreatetruecolor($newW, $newH);
+            // preserve transparency for png/webp/gif
+            if (in_array($mime, ['image/png','image/webp','image/gif'])) {
+                imagecolortransparent($dst, imagecolorallocatealpha($dst, 0, 0, 0, 127));
+                imagealphablending($dst, false);
+                imagesavealpha($dst, true);
+            }
+            imagecopyresampled($dst, $src, 0,0,0,0, $newW, $newH, $width, $height);
+        } else {
+            $dst = $src; // no resize
+        }
+
+        // save file according to mime
+        $ok = false;
+        switch ($mime) {
+            case 'image/jpeg': $ok = imagejpeg($dst, $dest, 86); break;
+            case 'image/png': $ok = imagepng($dst, $dest); break;
+            case 'image/gif': $ok = imagegif($dst, $dest); break;
+            case 'image/webp': $ok = imagewebp($dst, $dest); break;
+            default: $ok = imagejpeg($dst, $dest, 86); break;
+        }
+
+        if (is_resource($src) && $src !== $dst) imagedestroy($src);
+        if (is_resource($dst)) imagedestroy($dst);
+
+        if ($ok) return 'assets/img/' . $name;
+        return false;
+    }
+    
+    // FUNCTION TAMBAH PRODUK DENGAN FILE UPLOAD
+    function add_produk($data, $file) {
+        global $conn;
+        
+        try {
+            $nama = mysqli_real_escape_string($conn, $data["nama_barang"]);
+            $kategori = mysqli_real_escape_string($conn, $data["kategori"]);
+            $merk = mysqli_real_escape_string($conn, $data["merk"]);
+            $stok = intval($data["stok"]);
+            $keterangan = mysqli_real_escape_string($conn, $data["keterangan"]);
+            $harga_beli = floatval($data['harga']);
+            
+            // Hitung harga jual
+            $harga_jual = calculate_selling_price($harga_beli);
+            
+            // Handle file upload with validation + resize
+            $nama_file_database = '';
+            if (isset($file["img"]) && $file["img"]["error"] === UPLOAD_ERR_OK) {
+                $processed = process_uploaded_image($file["img"], 1200);
+                if ($processed) $nama_file_database = $processed;
+            }
+            
+            $stmt = $conn->prepare("INSERT INTO tb_barang (nama_barang, harga, img, kategori, merk, keterangan, stok, terjual) VALUES (?, ?, ?, ?, ?, ?, ?, 0)");
+            $stmt->bind_param("sdssssi", $nama, $harga_jual, $nama_file_database, $kategori, $merk, $keterangan, $stok);
+            
+            if ($stmt->execute()) {
+                return $stmt->insert_id;
+            } else {
+                throw new Exception("Gagal menyimpan produk: " . $stmt->error);
+            }
+            
+        } catch (Exception $e) {
+            error_log("Error add_produk: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // FUNCTION TAMBAH STOK
+    function add_stok($data) {
+        global $conn;
+        
+        $id = intval($data["id_barang"]);
+        $stok = intval($data["stok"]);
+
+        $stmt = $conn->prepare("UPDATE tb_barang SET stok = stok + ? WHERE id_barang = ?");
+        $stmt->bind_param("ii", $stok, $id);
+        
+        return $stmt->execute();
+    }
+    
+    // FUNCTION PENGELUARAN STOK
+    function pengeluaranstok($data) {
+        global $conn;
+        
+        $id_barang = intval($data['id_barang']);
+        $harga_jual = floatval($data['harga']);
+        $qty = intval($data['stok']);
+        $tgl = date("Y-m-d H:i:s");
+
+        // Hitung harga beli berdasarkan margin
+        if ($harga_jual <= 1000000) {
+            $margin = 0.3;
+        } elseif ($harga_jual <= 5000000) {
+            $margin = 0.2;
+        } elseif ($harga_jual <= 15000000) {
+            $margin = 0.1;
+        } elseif ($harga_jual <= 25000000) {
+            $margin = 0.08;
+        } else {
+            $margin = 0.05;
+        }
+        
+        $harga_beli = $harga_jual / (1 + $margin); // Hitung harga beli dari harga jual
+
+        // total cost
+        $total = $harga_beli * $qty;
+
+        // Try to get product name for record
+        $nama = '';
+        $stmtName = $conn->prepare("SELECT nama_barang FROM tb_barang WHERE id_barang = ? LIMIT 1");
+        $stmtName->bind_param('i', $id_barang);
+        $stmtName->execute();
+        $rowName = $stmtName->get_result()->fetch_assoc();
+        if ($rowName) $nama = $rowName['nama_barang'];
+
+        $stmt = $conn->prepare("INSERT INTO tb_pengeluaran (tanggal, nama_pengeluaran, harga, qty, total) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssidd", $tgl, $nama, $harga_beli, $qty, $total);
+        
+        return $stmt->execute();
+    }
+    
+    // FUNCTION TAMBAH PENGELUARAN
+    function add_pengeluaran($data, $id_barang) {
+        global $conn;
+        
+        $harga_beli = floatval($data['harga']);
+        $qty = intval($data['stok']);
+        $tgl = date("Y-m-d H:i:s");
+
+        // compute total and get product name
+        $total = $harga_beli * $qty;
+        $nama = '';
+        $stmtName = $conn->prepare("SELECT nama_barang FROM tb_barang WHERE id_barang = ? LIMIT 1");
+        $stmtName->bind_param('i', $id_barang);
+        $stmtName->execute();
+        $rowName = $stmtName->get_result()->fetch_assoc();
+        if ($rowName) $nama = $rowName['nama_barang'];
+
+        $stmt = $conn->prepare("INSERT INTO tb_pengeluaran (tanggal, nama_pengeluaran, harga, qty, total) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssidd", $tgl, $nama, $harga_beli, $qty, $total);
+        
+        return $stmt->execute();
+    }
+    
     $barang = query("SELECT * FROM tb_barang order by id_barang desc");
 
     if (isset($_POST["add_stok"])) {

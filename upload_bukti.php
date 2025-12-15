@@ -2,6 +2,35 @@
 session_start();
 include __DIR__ . '/db/koneksi.php';
 
+// FUNCTION UPLOAD BUKTI PEMBAYARAN
+function upbukti($data, $file) {
+    global $conn;
+    
+    $id_orders = intval($data["id_orders"]);
+    $status = "Menunggu Konfirmasi";
+    
+    // Handle file upload
+    $nama_file_database = '';
+    if (isset($file["bukti"]) && $file["bukti"]["error"] === UPLOAD_ERR_OK) {
+        $nama_file = uniqid() . '_' . basename($file["bukti"]["name"]);
+        $tujuan = __DIR__ . '/upload/' . $nama_file;
+        
+        // Create directory if not exists
+        if (!is_dir(dirname($tujuan))) {
+            mkdir(dirname($tujuan), 0777, true);
+        }
+        
+        if (move_uploaded_file($file["bukti"]["tmp_name"], $tujuan)) {
+            $nama_file_database = 'upload/' . $nama_file;
+        }
+    }
+    
+    $stmt = $conn->prepare("UPDATE orders SET bukti_pembayaran = ?, status = ? WHERE id_orders = ?");
+    $stmt->bind_param("ssi", $nama_file_database, $status, $id_orders);
+    
+    return $stmt->execute();
+}
+
 if (!isset($_SESSION['id_user'])) {
     header('HTTP/1.1 401 Unauthorized');
     echo 'Silakan login untuk mengunggah bukti pembayaran.';

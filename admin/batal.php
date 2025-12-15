@@ -1,6 +1,17 @@
 <?php 
 include "../db/koneksi.php";
 
+// FUNCTION BATAL ORDER
+function batal($id_orders) {
+    global $conn;
+    
+    $status = "Dibatalkan";
+    $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id_orders = ?");
+    $stmt->bind_param("si", $status, $id_orders);
+    
+    return $stmt->execute();
+}
+
 $orders = query("SELECT * FROM orders 
                 INNER JOIN jasa_kirim USING(id_jasa) 
                 INNER JOIN metode USING(id_metode)

@@ -209,8 +209,7 @@ footer .text-muted {
                             <tbody>
                             <?php 
                             foreach ($barang as $brg){
-                                $average_rating = round($brg['average_rating'], 1);
-                                if ($average_rating === null) $average_rating = 0;
+                                $average_rating = $brg['average_rating'] !== null ? round($brg['average_rating'], 1) : 0;
                             ?>
                             <tr>
                                 <td><?= substr($brg["nama_barang"], 0, 35) . "..." ?></td>

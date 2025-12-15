@@ -1,6 +1,7 @@
 <?php
-include __DIR__ . '/db/koneksi.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
+
+include __DIR__ . '/db/koneksi.php';
 
 // Cek apakah user sudah login
 $user_logged_in = isset($_SESSION['nama']);

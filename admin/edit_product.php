@@ -1,5 +1,143 @@
 <?php 
     include "../db/koneksi.php";
+    
+    // helper: process uploaded image (validate + resize) and store under assets/img/
+    function process_uploaded_image($file, $maxDim = 1200) {
+        if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return false;
+
+        $tmp = $file['tmp_name'];
+        $info = @getimagesize($tmp);
+        if (!$info) return false;
+
+        $mime = $info['mime'];
+        $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
+        if (!in_array($mime, $allowed)) return false;
+
+        $ext = '';
+        switch ($mime) {
+            case 'image/jpeg': $ext = '.jpg'; break;
+            case 'image/png': $ext = '.png'; break;
+            case 'image/gif': $ext = '.gif'; break;
+            case 'image/webp': $ext = '.webp'; break;
+            case 'image/avif': $ext = '.avif'; break;
+            default: $ext = '.jpg';
+        }
+
+        $name = uniqid() . $ext;
+        $dest = __DIR__ . '/../assets/img/' . $name;
+        if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0777, true);
+
+        if ($mime === 'image/avif' || !function_exists('imagecreatefromstring')) {
+            $origExt = pathinfo($file['name'], PATHINFO_EXTENSION);
+            if ($origExt) {
+                $dest = __DIR__ . '/../assets/img/' . uniqid() . '.' . strtolower($origExt);
+                if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0777, true);
+                if (move_uploaded_file($tmp, $dest)) return 'assets/img/' . basename($dest);
+            }
+            if (move_uploaded_file($tmp, $dest)) return 'assets/img/' . $name;
+            return false;
+        }
+
+        $data = file_get_contents($tmp);
+        if ($data === false) return false;
+
+        $src = @imagecreatefromstring($data);
+        if (!$src) {
+            if (move_uploaded_file($tmp, $dest)) return 'assets/img/' . $name;
+            return false;
+        }
+
+        $width = imagesx($src);
+        $height = imagesy($src);
+        $scale = min(1, $maxDim / max($width, $height));
+        $newW = (int) round($width * $scale);
+        $newH = (int) round($height * $scale);
+
+        if ($scale < 1) {
+            $dst = imagecreatetruecolor($newW, $newH);
+            if (in_array($mime, ['image/png','image/webp','image/gif'])) {
+                imagecolortransparent($dst, imagecolorallocatealpha($dst, 0, 0, 0, 127));
+                imagealphablending($dst, false);
+                imagesavealpha($dst, true);
+            }
+            imagecopyresampled($dst, $src, 0,0,0,0, $newW, $newH, $width, $height);
+        } else {
+            $dst = $src;
+        }
+
+        $ok = false;
+        switch ($mime) {
+            case 'image/jpeg': $ok = imagejpeg($dst, $dest, 86); break;
+            case 'image/png': $ok = imagepng($dst, $dest); break;
+            case 'image/gif': $ok = imagegif($dst, $dest); break;
+            case 'image/webp': $ok = imagewebp($dst, $dest); break;
+            default: $ok = imagejpeg($dst, $dest, 86); break;
+        }
+
+        if (is_resource($src) && $src !== $dst) imagedestroy($src);
+        if (is_resource($dst)) imagedestroy($dst);
+
+        if ($ok) return 'assets/img/' . $name;
+        return false;
+    }
+    
+    // FUNCTION EDIT PRODUK
+    function edit_produk($data, $file = null) {
+        global $conn;
+        
+        $id = intval($data["id_barang"]);
+        $nama_barang = mysqli_real_escape_string($conn, $data["nama_barang"]);
+        $kategori = mysqli_real_escape_string($conn, $data["kategori"]);
+        $merk = mysqli_real_escape_string($conn, $data["merk"]);
+        $harga = floatval($data["harga"]);
+        $keterangan = mysqli_real_escape_string($conn, $data["keterangan"]);
+
+        // If an image file is supplied and uploaded, save it and update the img column
+        $img_db = null;
+        if ($file && isset($file['img']) && $file['img']['error'] === UPLOAD_ERR_OK) {
+            $processed = process_uploaded_image($file['img'], 1200);
+            if ($processed) $img_db = $processed;
+        }
+
+        if ($img_db) {
+            $stmt = $conn->prepare("UPDATE tb_barang SET nama_barang = ?, kategori = ?, merk = ?, harga = ?, keterangan = ?, img = ? WHERE id_barang = ?");
+            $stmt->bind_param("sssdssi", $nama_barang, $kategori, $merk, $harga, $keterangan, $img_db, $id);
+        } else {
+            $stmt = $conn->prepare("UPDATE tb_barang SET nama_barang = ?, kategori = ?, merk = ?, harga = ?, keterangan = ? WHERE id_barang = ?");
+            $stmt->bind_param("sssdsi", $nama_barang, $kategori, $merk, $harga, $keterangan, $id);
+        }
+        
+        return $stmt->execute();
+    }
+    
+    // FUNCTION HAPUS PRODUK
+    function hapus_produk($id_barang) {
+        global $conn;
+        
+        $stmt = $conn->prepare("DELETE FROM tb_barang WHERE id_barang = ?");
+        $stmt->bind_param("i", $id_barang);
+        
+        return $stmt->execute();
+    }
+    
+    // FUNCTION SINGKAT NAMA BARANG
+    function singkat($nama_barang) {
+        $max_length = 20;
+        
+        if (strlen($nama_barang) > $max_length) {
+            $nama_pendek = substr($nama_barang, 0, $max_length);
+            $posisi_spasi = strrpos($nama_pendek, ' ');
+            
+            if ($posisi_spasi !== false) {
+                $nama_pendek = substr($nama_pendek, 0, $posisi_spasi);
+            }
+            
+            return $nama_pendek . '...';
+        }
+        
+        return $nama_barang;
+    }
+    
     $barang = query("SELECT * FROM tb_barang");
 
     if (isset($_POST["hapus"])) {
